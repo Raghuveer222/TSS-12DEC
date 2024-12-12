@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transportation Scheduling</title>
-    <link rel="stylesheet" href="/public/sytlesheet/styles.css">
+    <link rel="stylesheet" href="/stylesheets/styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+
 </head>
 <body>
     <div class="container">
@@ -18,7 +20,7 @@
             <!-- Login Form -->
             <div id="login" class="tab-content">
                 <h2>Login</h2>
-                <form id="login-form">
+                <form id="login-form" action="/login" method="POST">
                     <label for="email">Email:</label>
                     <input type="email" id="email" name="email" placeholder="Enter your email" required>
                     
@@ -26,9 +28,11 @@
                     <input type="password" id="password" name="password" placeholder="Enter your password" required>
 
                     <label for="role">Login as:</label>
-                    <select id="role" name="role">
+                    <select id="role" name="role" required>
+
                         <option value="user">User</option>
                         <option value="transporter">Transporter</option>
+
                     </select>
 
                     <button type="submit">Login</button>
@@ -38,18 +42,18 @@
             <!-- Signup Form -->
             <div id="signup" class="tab-content" style="display: none;">
                 <h2>Signup</h2>
-                <form id="signup-form">
+                <form id="signup-form" action="/signup" method="POST">
                     <label for="name">Name:</label>
                     <input type="text" id="name" name="name" placeholder="Enter your full name" required>
                     
-                    <label for="signup-email">Email:</label>
+                    <label for="email">Email:</label>
                     <input type="email" id="signup-email" name="email" placeholder="Enter your email" required>
                     
-                    <label for="signup-password">Password:</label>
+                    <label for="password">Password:</label>
                     <input type="password" id="signup-password" name="password" placeholder="Create a password" required>
                     <small>Password must be at least 6 characters long and include at least one number.</small>
                 
-                    <label for="role-signup">Sign up as:</label>
+                    <label for="role">Sign up as:</label>
                     <select id="role-signup" name="role" required>
                         <option value="" disabled selected>Select your role</option>
                         <option value="user">User</option>
@@ -58,10 +62,9 @@
                 
                     <button type="submit">Signup</button>
                 </form>
-                
             </div>
         </div>
     </div>
-    <script src="/public/scriptsheet/script.js"></script>
+    <script src="/scripts/script.js"></script>
 </body>
 </html>

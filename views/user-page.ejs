@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
-    <link rel="stylesheet" href="/public/sytlesheet/user-page.css">
+    <link rel="stylesheet" href="/stylesheets/user-page.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
     <div class="container">
@@ -21,26 +22,28 @@
 
         <!-- Dashboard Section -->
         <div id="dashboard-section">
-            <h2>Welcome to your Dashboard</h2>
+            <h2>Welcome, <%= user.name %>!</h2>
             <p>Use the navigation menu to initiate shipments or manage your profile.</p>
+            <p>You have <strong><%= shipments.length %></strong> active shipments.</p>
         </div>
 
         <!-- Initiate Shipment Section -->
         <div id="initiate-shipment-section" style="display: none;">
             <h2>Initiate Shipment</h2>
-            <form id="shipmentForm">
+            <form id="shipmentForm" action="/shipments/initiate" method="POST">
                 <label for="location">Drop-off Location:</label>
-                <input type="text" id="location" required>
+                <input type="text" id="location" name="location" required>
                 
                 <label for="dateTime">Select Date and Time:</label>
-                <input type="datetime-local" id="dateTime" required>
+                <input type="datetime-local" id="dateTime" name="dateTime" required>
                 
                 <label for="goodsDescription">Describe Goods:</label>
-                <textarea id="goodsDescription" required></textarea>
+                <textarea id="goodsDescription" name="goodsDescription" required></textarea>
                 
                 <label for="vehicleType">Choose Vehicle Type:</label>
-                <select id="vehicleType" required>
+                <select id="vehicleType" name="vehicleType" required>
                     <option value="Truck">Truck</option>
+                    <option value="Bus">Truck</option>
                     <option value="Van">Van</option>
                     <option value="Bike">Bike</option>
                 </select>
@@ -52,10 +55,46 @@
         <!-- Manage Profile Section -->
         <div id="manage-profile-section" style="display: none;">
             <h2>Manage Profile</h2>
-            <p><strong>Username:</strong> <span id="username"></span></p>
-            <p><strong>Email:</strong> <span id="email"></span></p>
+            <p><strong>Username:</strong> <%= user.name %></p>
+            <p><strong>Email:</strong> <%= user.email %></p>
+            <p><strong>Phone:</strong> <%= user.phone || 'Not Provided' %></p>
+        </div>
+
+        <!-- Shipment List Section -->
+        <div id="shipment-list-section" style="display: none;">
+            <h2>Your Shipments</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Shipment ID</th>
+                        <th>Location</th>
+                        <th>Date & Time</th>
+                        <th>Goods Description</th>
+                        <th>Vehicle Type</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (shipments.length > 0) { %>
+                        <% shipments.forEach(shipment => { %>
+                            <tr>
+                                <td><%= shipment._id %></td>
+                                <td><%= shipment.location %></td>
+                                <td><%= shipment.dateTime %></td>
+                                <td><%= shipment.goodsDescription %></td>
+                                <td><%= shipment.vehicleType %></td>
+                                <td><%= shipment.status %></td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="6">No shipments found</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
         </div>
     </div>
-    <script src="/public/scriptsheet/user-page.js"></script>
+    <script src="/scripts/user-page.js"></script>
 </body>
 </html>

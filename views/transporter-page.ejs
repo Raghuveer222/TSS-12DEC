@@ -4,40 +4,85 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transporter Dashboard</title>
-    <link rel="stylesheet" href="/public/sytlesheet/transporter-page.css">
+    <link rel="stylesheet" href="/stylesheets/transporter-page.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+
 </head>
 <body>
     <div class="container">
         <h1>Transporter Dashboard</h1>
 
+
         <!-- Dashboard Navigation -->
         <nav>
             <ul>
                 <li><a href="#" id="dashboard-link">Dashboard</a></li>
-                <li><a href="#" id="manage-shipments-link">Manage Shipments</a></li>
+                <li><a href="#" id="view-shipments-link">View Shipments</a></li>
                 <li><a href="#" id="manage-profile-link">Manage Profile</a></li>
             </ul>
         </nav>
 
+
         <!-- Dashboard Section -->
         <div id="dashboard-section">
             <h2>Welcome to your Dashboard</h2>
-            <p>Use the navigation menu to manage shipments or update your profile.</p>
+            <p>Use the navigation menu to view shipments or manage your profile.</p>
         </div>
 
-        <!-- Manage Shipments Section -->
-        <div id="manage-shipments-section" style="display: none;">
-            <h2>Manage Shipments</h2>
-            <div id="requests-container"></div>
+
+        <!-- View Shipments Section -->
+        <div id="view-shipments-section" style="display: none;">
+            <h2>View Shipments</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Shipment ID</th>
+                        <th>Location</th>
+                        <th>Date & Time</th>
+                        <th>Goods Description</th>
+                        <th>Vehicle Type</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="shipmentTableBody">
+
+                    <!-- Dynamic content populated via server or JavaScript -->
+                    <% if (shipments && shipments.length > 0) { %>
+                        <% shipments.forEach(shipment => { %>
+                            <tr>
+                                <td><%= shipment._id %></td>
+                                <td><%= shipment.location %></td>
+                                <td><%= shipment.dateTime %></td>
+                                <td><%= shipment.goodsDescription %></td>
+                                <td><%= shipment.vehicleType %></td>
+                                <td><%= shipment.status %></td>
+                                <td>
+                                    <% if (shipment.status === 'Pending') { %>
+                                        <button class="accept-btn" data-id="<%= shipment._id %>">Accept</button>
+                                    <% } else { %>
+                                        <button class="update-status-btn" data-id="<%= shipment._id %>">Update Status</button>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="7">No shipments available</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
         </div>
 
         <!-- Manage Profile Section -->
         <div id="manage-profile-section" style="display: none;">
             <h2>Manage Profile</h2>
-            <p><strong>Username:</strong> <span id="username"></span></p>
-            <p><strong>Email:</strong> <span id="email"></span></p>
+            <p><strong>Transporter Name:</strong> <span id="transporter-name"><%= transporter.name %></span></p>
+            <p><strong>Email:</strong> <span id="transporter-email"><%= transporter.email %></span></p>
+            <p><strong>Vehicle Types:</strong> <span id="transporter-vehicles"><%= transporter.vehicleTypes.join(', ') %></span></p>
         </div>
     </div>
-    <script src="/public/scriptsheet/transporter-page.js"></script>
+    <script src="/scripts/transporter-page.js"></script>
 </body>
 </html>
