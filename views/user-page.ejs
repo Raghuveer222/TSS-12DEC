@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <link rel="stylesheet" href="/public/sytlesheet/user-page.css">
+</head>
+<body>
+    <div class="container">
+        <h1>User Dashboard</h1>
+
+        <!-- Dashboard Navigation -->
+        <nav>
+            <ul>
+                <li><a href="#" id="dashboard-link">Dashboard</a></li>
+                <li><a href="#" id="initiate-shipment-link">Initiate Shipment</a></li>
+                <li><a href="#" id="manage-profile-link">Manage Profile</a></li>
+            </ul>
+        </nav>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard-section">
+            <h2>Welcome to your Dashboard</h2>
+            <p>Use the navigation menu to initiate shipments or manage your profile.</p>
+        </div>
+
+        <!-- Initiate Shipment Section -->
+        <div id="initiate-shipment-section" style="display: none;">
+            <h2>Initiate Shipment</h2>
+            <form id="shipmentForm">
+                <label for="location">Drop-off Location:</label>
+                <input type="text" id="location" required>
+                
+                <label for="dateTime">Select Date and Time:</label>
+                <input type="datetime-local" id="dateTime" required>
+                
+                <label for="goodsDescription">Describe Goods:</label>
+                <textarea id="goodsDescription" required></textarea>
+                
+                <label for="vehicleType">Choose Vehicle Type:</label>
+                <select id="vehicleType" required>
+                    <option value="Truck">Truck</option>
+                    <option value="Van">Van</option>
+                    <option value="Bike">Bike</option>
+                </select>
+                
+                <button type="submit">Submit Delivery Request</button>
+            </form>
+        </div>
+
+        <!-- Manage Profile Section -->
+        <div id="manage-profile-section" style="display: none;">
+            <h2>Manage Profile</h2>
+            <p><strong>Username:</strong> <span id="username"></span></p>
+            <p><strong>Email:</strong> <span id="email"></span></p>
+        </div>
+    </div>
+    <script src="/public/scriptsheet/user-page.js"></script>
+</body>
+</html>
