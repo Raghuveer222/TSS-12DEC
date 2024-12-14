@@ -1,14 +1,11 @@
+// Import required modules
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const User = require('./models/usermodel.js');
 const Transporter = require('./models/transportermodel.js');
-const shipment = require('./models/shipments.js');
+const Shipment = require('./models/shipments.js');
 const app = express();
-const cookieParser = require('cookie-parser');
-
-// Add cookie-parser middleware
-app.use(cookieParser());
 
 // Connect to MongoDB
 mongoose.connect('mongodb://127.0.0.1:27017/finaltss', {
@@ -20,147 +17,149 @@ mongoose.connect('mongodb://127.0.0.1:27017/finaltss', {
     console.error('MongoDB connection error:', err);
 });
 
+
+
 // Set EJS as the template engine
 app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+
 // Routes main index
 app.get('/', (req, res) => {
-    res.render('index'); // Render the index.ejs page
+    res.render('index.ejs'); // Render the index.ejs page
 });
+
+
+// app.get('/user',function(req,res){
+//      res.render('user-page.ejs')
+// })
+
+
 
 // Route to render the user page after login
-app.get('/user', (req, res) => {
-    // Retrieve userId from the cookies
-    const userId = req.cookies.userId;
-
-    if (!userId) {
-        // If no userId in cookie, redirect to login page
-        return res.redirect('/login');
-    }
-
-    // Find the user by userId
-    User.findById(userId, (err, user) => {
-        if (err) {
-            // Handle error if there is an issue retrieving the user data
-            return res.status(500).send('Error retrieving user data');
-        }
-
+app.get('/user-page/:userId', async (req, res) => {
+    console.log('working')
+    const userId = req.params.userId;
+    console.log('User ID:', userId);
+    try {
+        const user = await User.findById(userId);
         if (!user) {
-            // If no user found with the given userId, redirect to login
             return res.redirect('/login');
         }
+        console.log('User found:', user);
+        const shipments = await Shipment.find({ userId });
+        console.log('Shipments:', shipments);
 
-        // Find shipments associated with this userId
-        Shipment.find({ userId: userId }, (err, shipments) => {
-            if (err) {
-                // Handle error if there is an issue retrieving shipments
-                return res.status(500).send('Error retrieving shipments');
-            }
-
-            // Render the user page and pass the user and shipments data
-            res.render('user-page', { user, shipments });
-        });
-    });
+         console.log("page render by using /user")
+        res.render('user-page.ejs', { user, shipments });  // user-page.ejs is the correct file name
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('An error occurred while retrieving data');
+    }
 });
 
 
-// transporter------>
 
-app.get('/transporter', (req, res) => {
-    res.render('transporter-page'); // Render the transporter page
+
+// Transporter route
+app.get('/transporter-page/:transporterId', async (req, res) => {
+    const transporterId = req.params.transporterId; // Get transporterId from URL parameters
+
+    try {
+        const transporter = await Transporter.findById(transporterId); // Fetch transporter details
+        if (!transporter) {
+            return res.redirect('/login'); // Redirect to login if not found
+        }
+
+        res.render('transporter-page.ejs', { transporter }); // Render transporter page
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('An error occurred while retrieving transporter data');
+    }
 });
 
-
- //shipment--->
-// POST route for initiating a shipment
+// Shipment initiation route
 app.post('/shipments/initiate', async (req, res) => {
-    const { location, dateTime, goodsDescription, vehicleType } = req.body;
+    const { userId, location, dateTime, goodsDescription, vehicleType } = req.body; // Retrieve details from the request body
 
-    // Check if all fields are provided
-    if (!location || !dateTime || !goodsDescription || !vehicleType) {
-        return res.status(400).send('All fields are required!');
+    if (!userId || !location || !dateTime || !goodsDescription || !vehicleType) {
+        return res.status(400).send('All fields are required!'); // Validate required fields
     }
 
     try {
-        // Create a new shipment object
         const newShipment = new Shipment({
+            userId,
             location,
             dateTime,
             goodsDescription,
             vehicleType,
         });
 
-        // Save the shipment to the database
-        await newShipment.save();
-
+        await newShipment.save(); // Save the shipment to the database
         console.log('Shipment initiated:', newShipment);
-
-        // Redirect the user to the dashboard or another page after the shipment is created
-        res.redirect('/user'); // Redirect to user dashboard or another page as necessary
+        res.redirect(`/user-page/${userId}`); // Redirect to the user page
     } catch (error) {
         console.error('Error initiating shipment:', error);
         res.status(500).send('Error initiating shipment');
     }
 });
 
-// Signup Route
-app.post('/signup', (req, res) => {
-    const { name, email, password, role } = req.body;
+// Signup route
+app.post('/signup', async (req, res) => {
+    const { name, email, password, role } = req.body; // Extract fields from request body
 
     if (!name || !email || !password || !role) {
         return res.status(400).send('All fields are required!');
     }
 
-    if (role === 'user') {
-        const newUser = new User({ name, email, password });
-        newUser.save((err, savedUser) => {
-            if (err) {
-                return res.status(500).send('Error during signup');
-            }
+    try {
+        if (role === 'user') {
+            const newUser = new User({ name, email, password });
+            const savedUser = await newUser.save();
             console.log('User signed up:', savedUser);
-            return res.status(201).redirect('/user');
-        });
-    } else if (role === 'transporter') {
-        const newTransporter = new Transporter({ name, email, password });
-        newTransporter.save((err, savedTransporter) => {
-            if (err) {
-                return res.status(500).send('Error during signup');
-            }
+            res.status(201).redirect(`/use-page/${savedUser._id}`); // Redirect to user page
+        } else if (role === 'transporter') {
+            const newTransporter = new Transporter({ name, email, password });
+            const savedTransporter = await newTransporter.save();
             console.log('Transporter signed up:', savedTransporter);
-            return res.status(201).redirect('/transporter');
-        });
-    } else {
-        return res.status(400).send('Invalid role selected');
+            res.status(201).redirect(`/transporter-page/${savedTransporter._id}`); // Redirect to transporter page
+        } else {
+            res.status(400).send('Invalid role selected');
+        }
+    } catch (error) {
+        console.error('Error during signup:', error);
+        res.status(500).send('Error during signup');
     }
 });
 
-// Login Route
-app.post('/login', (req, res) => {
-    const { email, password, role } = req.body;
+// Login route
+app.post('/login', async (req, res) => {
+    const { email, password, role } = req.body; // Extract fields from request body
 
     if (!email || !password || !role) {
         return res.status(400).send('All fields are required!');
     }
 
-    const model = role === 'user' ? User : Transporter;
+    try {
+        const model = role === 'user' ? User : Transporter; // Determine the model based on the role
+        const user = await model.findOne({ email }); // Find the user by email
 
-    model.findOne({ email }, (err, user) => {
-        if (err) {
-            return res.status(500).send('Error during login');
-        }
-
-        if (user && user.password === password) {
+        if (user && user.password === password) {f
             console.log(`${role} logged in:`, user);
-            return res.redirect(role === 'user' ? '/user' : '/transporter');
+            res.redirect(role === 'user' ? `/user-page/${user.id}` : `/transporter-page/${user._id}`); // Redirect based on role
+        } else {
+            res.status(400).send('Invalid email or password');
         }
-
-        return res.status(400).send('Invalid email or password');
-    });
+    } catch (error) {
+        console.error('Error during login:', error);
+        res.status(500).send('Error during login');
+    }
 });
 
 // Start the server

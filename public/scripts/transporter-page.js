@@ -1,70 +1,93 @@
-// Retrieve logged-in transporter details
+// Check if the transporter is logged in
 const loggedInTransporter = JSON.parse(localStorage.getItem("loggedInUser"));
 
 if (!loggedInTransporter) {
     alert("No transporter is logged in. Redirecting to login page.");
-    window.location.href = "login.html";
+    window.location.href = "/login"; // Adjust path as needed
 } else {
-    // Populate transporter profile
-    document.getElementById("username").textContent = loggedInTransporter.name;
-    document.getElementById("email").textContent = loggedInTransporter.email;
+    // Populate transporter profile details dynamically
+    document.getElementById("transporter-name").textContent = loggedInTransporter.name;
+    document.getElementById("transporter-email").textContent = loggedInTransporter.email;
+    document.getElementById("transporter-vehicles").textContent = loggedInTransporter.vehicleTypes.join(", ");
 }
 
-// Dashboard Navigation
+// Navigation links functionality
 document.getElementById("dashboard-link").addEventListener("click", () => {
     showSection("dashboard-section");
 });
-document.getElementById("manage-shipments-link").addEventListener("click", () => {
-    showSection("manage-shipments-section");
-    loadShipmentRequests();
+document.getElementById("view-shipments-link").addEventListener("click", () => {
+    showSection("view-shipments-section");
+    loadShipments();
 });
 document.getElementById("manage-profile-link").addEventListener("click", () => {
     showSection("manage-profile-section");
 });
 
+// Function to show a specific section and hide others
 function showSection(sectionId) {
     const sections = document.querySelectorAll("div[id$='-section']");
     sections.forEach(section => section.style.display = "none");
     document.getElementById(sectionId).style.display = "block";
 }
 
-// Load Shipment Requests
-function loadShipmentRequests() {
-    const requests = JSON.parse(localStorage.getItem("shipmentRequests")) || [];
-    const container = document.getElementById("requests-container");
-    container.innerHTML = "";
+// Load shipments dynamically
+function loadShipments() {
+    const shipmentTableBody = document.getElementById("shipmentTableBody");
 
-    if (requests.length === 0) {
-        container.innerHTML = "<p>No shipment requests available.</p>";
+    // Assuming shipments are fetched from localStorage or an API
+    const shipments = JSON.parse(localStorage.getItem("shipments")) || [];
+    shipmentTableBody.innerHTML = "";
+
+    if (shipments.length === 0) {
+        shipmentTableBody.innerHTML = `<tr><td colspan="7">No shipments available</td></tr>`;
         return;
     }
 
-    requests.forEach((request, index) => {
-        const requestCard = document.createElement("div");
-        requestCard.className = "card";
-        requestCard.innerHTML = `
-            <p><strong>Drop-off Location:</strong> ${request.location}</p>
-            <p><strong>Date & Time:</strong> ${request.dateTime}</p>
-            <p><strong>Goods:</strong> ${request.goodsDescription}</p>
-            <p><strong>Vehicle Type:</strong> ${request.vehicleType}</p>
-            <p><strong>Requested by:</strong> ${request.user}</p>
-            <button onclick="approveRequest(${index})">Approve</button>
-            <button onclick="rejectRequest(${index})">Reject</button>
+    shipments.forEach(shipment => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${shipment._id}</td>
+            <td>${shipment.location}</td>
+            <td>${shipment.dateTime}</td>
+            <td>${shipment.goodsDescription}</td>
+            <td>${shipment.vehicleType}</td>
+            <td>${shipment.status}</td>
+            <td>
+                ${shipment.status === 'Pending' ? 
+                    `<button class="accept-btn" data-id="${shipment._id}">Accept</button>` : 
+                    `<button class="update-status-btn" data-id="${shipment._id}">Update Status</button>`
+                }
+            </td>
         `;
-        container.appendChild(requestCard);
+
+        // Add event listeners to buttons
+        const acceptBtn = row.querySelector(".accept-btn");
+        const updateStatusBtn = row.querySelector(".update-status-btn");
+
+        if (acceptBtn) {
+            acceptBtn.addEventListener("click", () => handleShipmentAction(shipment._id, "Accepted"));
+        }
+        if (updateStatusBtn) {
+            updateStatusBtn.addEventListener("click", () => handleShipmentAction(shipment._id, "In Progress"));
+        }
+
+        shipmentTableBody.appendChild(row);
     });
 }
 
-function approveRequest(index) {
-    handleRequest(index, "approved");
+// Handle shipment actions
+function handleShipmentAction(shipmentId, newStatus) {
+    let shipments = JSON.parse(localStorage.getItem("shipments")) || [];
+
+    shipments = shipments.map(shipment => {
+        if (shipment._id === shipmentId) {
+            shipment.status = newStatus;
+        }
+        return shipment;
+    });
+
+    localStorage.setItem("shipments", JSON.stringify(shipments));
+    loadShipments(); // Refresh the shipment table
 }
 
-function rejectRequest(index) {
-    handleRequest(index, "rejected");
-}
-
-function handleRequest(index, status) {
-    const requests = JSON.parse(localStorage.getItem("shipmentRequests")) || [];
-    requests.splice(index, 1); // Remove the request
-   
-}
+// Additional utility functions can be added if required
